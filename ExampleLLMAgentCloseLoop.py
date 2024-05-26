@@ -4,7 +4,8 @@ import time
 from rich import print
 from typing import List, Tuple
 from datetime import datetime
-from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
+from langchain.chat_models import AzureChatOpenAI, ChatOpenAI, ChatAnthropic
+from langchain_community.llms import Tongyi
 from langchain.callbacks import get_openai_callback
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from simInfo.Memory import DrivingMemory
@@ -24,6 +25,7 @@ from simModel.DataQueue import QuestionAndAnswer
 
 import logger, logging
 from trafficManager.common.vehicle import Behaviour
+import yaml
 
 decision_logger = logger.setup_app_level_logger(
     logger_name="LLMAgent", file_name="llm_decision.log")
@@ -67,13 +69,31 @@ class LLMAgent:
         #         request_timeout=60,
         #     )
 
+        # openai_key and base
+
+        CONFIG = yaml.load(open('api_config.yaml'), Loader=yaml.FullLoader)
+        os.environ["OPENAI_API_KEY"] = CONFIG['OPENAI']['api_key']
+        os.environ["OPENAI_API_BASE"] = CONFIG['OPENAI']['api_base']
+        os.environ["DASHSCOPE_API_KEY"] = CONFIG['Qwen_API_KEY']
+
         # openai key
         self.llm = ChatOpenAI(
             temperature=0,
-            model_name= 'gpt-4-0125-preview',
+            model_name= 'gemini-1.5-pro',
             max_tokens=2000,
             request_timeout=60,
         )
+
+
+        # claude 
+        # self.llm = ChatAnthropic(
+        #     temperature=0,
+        #     model_name= 'claude-3-sonnet-20240229',
+        #     max_tokens=2000,
+        #     request_timeout=60,
+        # )
+
+        self
         db_path = os.path.dirname(os.path.abspath(__file__)) + "/db/" + "memory_library/" # the path for the memory database
         self.agent_memory = DrivingMemory(db_path=db_path)
         self.few_shot_num = 3
@@ -269,11 +289,11 @@ class LLMAgent:
         return result, response.content, human_message, few_shot_store, self.llm_source
 
 if __name__ == "__main__":
-    ego_id = "50"
+    ego_id = "6"
     sumo_gui = False
-    sumo_cfg_file = './networkFiles/CarlaTown06/Town06.sumocfg'
-    sumo_net_file = "./networkFiles/CarlaTown06/Town06.net.xml"
-    sumo_rou_file = "./networkFiles/CarlaTown06/carlavtypes.rou.xml,networkFiles/CarlaTown06/Town06.rou.xml"
+    sumo_cfg_file = ''
+    sumo_net_file = "networkFiles/ramp_merging_2/ramp_2.net.xml"
+    sumo_rou_file = "networkFiles/ramp_merging_2/ramp_2.rou.xml"
     carla_host = '127.0.0.1'
     carla_port = 2000
     step_length = 0.1

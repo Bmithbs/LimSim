@@ -54,7 +54,7 @@ class Hyper_Parameter():
         else:
             return 0.0
 
-class Decision_Score():
+class Decision_Score(): 
     def __init__(self) -> None:
         self.comfort = 0.0
         self.efficiency = 0.0
@@ -104,23 +104,23 @@ class Score_List(list):
         Returns:
             float: Driving score for the LLM Driver
         """
-        comfort = 0.0
-        efficiency = 0.0
-        speed_limit = 0
-        safety = 0.0
-        red_light = 1.0
+        self.comfort = 0.0
+        self.efficiency = 0.0
+        self.speed_limit = 0
+        self.safety = 0.0
+        self.red_light = 1.0
         for score_item in self:
             score_item.comfort = score_item.comfort_score()
-            comfort += score_item.comfort
-            efficiency += score_item.efficiency
-            speed_limit += 1 if score_item.speed_limit == 0.9 else 0
-            safety += score_item.safety
-            red_light *= score_item.red_light
-        comfort /= len(self)
-        efficiency /= len(self)
-        safety /= len(self)
-        speed_limit_penalty = 0.9 ** (speed_limit / len(self) * 10)
-        return (hyper_parameter.score_weight["comfort"] * comfort + hyper_parameter.score_weight["efficiency"] * efficiency + hyper_parameter.score_weight["safety"] * safety) * red_light * speed_limit_penalty * self.penalty * 100
+            self.comfort += score_item.comfort
+            self.efficiency += score_item.efficiency
+            self.speed_limit += 1 if score_item.speed_limit == 0.9 else 0
+            self.safety += score_item.safety
+            self.red_light *= score_item.red_light
+        self.comfort /= len(self)
+        self.efficiency /= len(self)
+        self.safety /= len(self)
+        speed_limit_penalty = 0.9 ** (self.speed_limit / len(self) * 10)
+        return (hyper_parameter.score_weight["comfort"] * self.comfort + hyper_parameter.score_weight["efficiency"] * self.efficiency + hyper_parameter.score_weight["safety"] * self.safety) * self.red_light * speed_limit_penalty * self.penalty * 100
     
     def fail_result(self):
         self.penalty = 0.6
@@ -145,7 +145,7 @@ class Decision_Evaluation:
         cur = conn.cursor()
         cur.execute("DROP TABLE IF EXISTS evaluationINFO")
         conn.commit()
-        cur.execute(
+        cur.execute( 
             """CREATE TABLE IF NOT EXISTS evaluationINFO(
                 frame REAL PRIMARY KEY,
                 traffic_light_score REAL,
@@ -487,6 +487,9 @@ class Decision_Evaluation:
             self.logger.info("your final score is {}".format(round(self.final_s, 3)))
             self.logger.info("your driving mile is {} m, the route length is {} m, the complete percentage is {}%".format(round(self.driving_mile, 3), round(self.route_length, 3), round(self.complete_p*100, 3)))
             self.logger.info("your driving score is {}".format(round(self.decision_score.eval_score(self.hyper_parameter), 3)))
+            self.logger.info("your comfort score is {}".format(round(self.decision_score.comfort, 3)))
+            self.logger.info("your efficiency score is {}".format(round(self.decision_score.efficiency, 3)))
+            self.logger.info("your safety score is {}".format(round(self.decision_score.safety, 3)))
             self.logger.info("your driving time is {} s".format((model.timeStep - self.current_time)/10))
             
         return
