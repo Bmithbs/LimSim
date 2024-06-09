@@ -553,6 +553,6 @@ class EnvDescription:
         prompt += self.getCurrentLaneInfo(roadgraph, vehicles)
         prompt += self.getNextLaneInfo(roadgraph, vehicles)
         prompt += self.getEgoInfo(vehicles)
-        prompt += self.getOtherVehicleInfo(roadgraph, vehicles)
+        # prompt += self.getOtherVehicleInfo(roadgraph, vehicles)
         prompt += self.getLastDecisionInfo(vehicles)
         return prompt
